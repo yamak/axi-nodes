@@ -100,5 +100,5 @@ class AXIMasterMemRW extends AXIModule{
 }
 
 object AXIMasterMemRW extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new AXIMasterMemRW) //Generate verilog code
+  (new chisel3.stage.ChiselStage).emitVerilog(new AXIMasterMemRW,Array("--target-dir", "generated/")) //Generate verilog code
 }

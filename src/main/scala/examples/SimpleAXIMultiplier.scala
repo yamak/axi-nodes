@@ -85,5 +85,5 @@ class SimpleAXIMultiplier extends AXIModule {
 }
 
 object SimpleAXIMultiplier extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new SimpleAXIMultiplier) // Generate verilog code
+  (new chisel3.stage.ChiselStage).emitVerilog(new SimpleAXIMultiplier,Array("--target-dir", "generated/")) // Generate verilog code
 }
