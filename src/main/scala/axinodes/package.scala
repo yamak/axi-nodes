@@ -64,7 +64,24 @@ package object axinodes {
      */
     protected def bitsWide:AXI4DataBitsWide=AXI4DataBitsWide_32
 
-    protected def AXI4UserIO[T<:Bundle](bundle:T):T
+    protected def AXI4UserIO[T<:Data](gen:T):T
   }
+
+  abstract class AXINode(implicit val ioFactory:AXIModule#IOFactory){
+
+
+    /**
+     * Thanks to this function, although the implementation of
+     * AXI4LiteSlaveConfig is not a subclass of the Module,
+     * user can can define IO via this function.
+     * @param bundle Bundle that will be IO
+     * @tparam T
+     * @return bundle parameter
+     */
+    def AXI4UserIO[T<:Data](bundle: T):T={
+      ioFactory(bundle)
+    }
+  }
+
 
 }

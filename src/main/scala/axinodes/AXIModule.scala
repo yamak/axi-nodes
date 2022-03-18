@@ -15,11 +15,10 @@ import chisel3._
  */
 abstract class AXIModule extends RawModule {
 
-
   class IOFactory
   {
-    def apply[T<:Bundle](bundle:T)={
-        IO(bundle)
+    def apply[T<:Data](bundle:T)={
+      IO(bundle)
     }
   }
 
@@ -31,7 +30,7 @@ abstract class AXIModule extends RawModule {
    * @param interface Type of node to be created
    * @return New Axi node
    * @example
-   * val m0=AXI4Interface(new AXI4LiteMasterNode with MasterLedController)
+   * val m0=AXIClockAndResetDomain(new AXI4LiteMasterNode with MasterLedController)
    */
   def AXIClockAndResetDomain[T<:AXIBaseInterface](interface: =>T):T={
     val aclock= IO(Input(Clock()))

@@ -178,7 +178,7 @@ trait AXI4LiteSlaveInterface extends AXIBaseInterface {
    * The user must implement this method as lazy val
    * @return Register mappings
    */
-  def regmap:AXI4LiteRegMap
+  protected def regmap:AXI4LiteRegMap
 
   /**
    * This method returns user defined register count.
@@ -186,13 +186,13 @@ trait AXI4LiteSlaveInterface extends AXIBaseInterface {
    * [[AXI4LiteSlaveNode]] uses this function.
    * @return Register count
    */
-  def regCount:Int
+  protected def regCount:Int
 
-  val wStall:Bool
-  val rStall:Bool
-  def currentWriteAddress:UInt
-  def currentReadAddress:UInt
-  val newDataReceived:Bool
+  protected val wStall:Bool
+  protected val rStall:Bool
+  protected def currentWriteAddress:UInt
+  protected def currentReadAddress:UInt
+  protected val newDataReceived:Bool
 }
 
 /**
@@ -224,7 +224,7 @@ trait AXI4LiteSlaveInterface extends AXIBaseInterface {
  * Because this class isn't subclass of Module, such a trick is used
  * @example
  * {{{
- * trait LedController extends AXI4LiteSlaveConfig {
+ * trait LedController extends AXI4LiteSlaveInterface {
  *    ...
  *    ...
  * }
@@ -233,7 +233,7 @@ trait AXI4LiteSlaveInterface extends AXIBaseInterface {
  * }
  * }}}
  */
-abstract class AXI4LiteSlaveNode(implicit ioFactory:AXIModule#IOFactory){
+abstract class AXI4LiteSlaveNode(implicit ioFactory:AXIModule#IOFactory) extends AXINode {
 
   this:AXI4LiteSlaveInterface=>
   require(regCount>0,"regCount must be bigger than 0")
@@ -281,21 +281,18 @@ abstract class AXI4LiteSlaveNode(implicit ioFactory:AXIModule#IOFactory){
   private val arSkidBuffer=Module(new SkidBuffer(new AXI4LiteReadAddressChannel(addrBitWidth)))
 
   /**
-   * This attribute is implemented by [[AXI4LiteSlaveNode]].
    * The user can use this attribute for stalling write transaction.
    * AXI wready and awready signal is kept low as long as this attribute is true.
    */
   override val wStall: Bool = WireInit(false.B)
 
   /**
-   * This attribute is overrided by [[AXI4LiteSlaveNode]].
    * The user can use this attribute for stalling read transaction.
    * AXI arready signal is kept low as long as this attribute is true.
    */
   override val rStall: Bool = WireInit(false.B)
 
   /**
-   * This attribute is implemented by [[AXI4LiteSlaveNode]].
    * When new data is received, this attribute becomes true and
    * incoming data is written to user's write registers.
    * So the user can read write-registers next rising edge of clock
@@ -375,19 +372,6 @@ abstract class AXI4LiteSlaveNode(implicit ioFactory:AXIModule#IOFactory){
     }
   }
 
-
-  /**
-   * Thanks to this function, although the implementation of
-   * AXI4LiteSlaveConfig is not a subclass of the Module,
-   * user can define IO via this function.
-   * @param bundle Bundle that will be IO
-   * @tparam T
-   * @return bundle parameter
-   */
-  def AXI4UserIO[T<:Bundle](bundle: T):T={
-    ioFactory(bundle)
-  }
-
   /**
    * The user can use this function for getting current axi write address.
    * This function return master's awaddr directly.
@@ -420,20 +404,20 @@ trait AXI4LiteMasterInterface extends AXIBaseInterface{
 
   private val defaultWriteStrobe:Int = if(bitsWide==AXI4DataBitsWide_32) 0x0F else 0xFF
 
-  def startWriteTransaction(data:UInt,addr:UInt,strobe:UInt=defaultWriteStrobe.U)
-  def startReadTransaction(addr:UInt)
-  def isReadTransactionCompleted:Bool
-  def currentReadData:UInt
-  def isReadyToWrite:Bool
-  def isReadyToRead:Bool
-  val writeResponseError:UInt
-  val readResponseError:UInt
+  protected def startWriteTransaction(data:UInt,addr:UInt,strobe:UInt=defaultWriteStrobe.U)
+  protected def startReadTransaction(addr:UInt)
+  protected def isReadTransactionCompleted:Bool
+  protected def currentReadData:UInt
+  protected def isReadyToWrite:Bool
+  protected def isReadyToRead:Bool
+  protected val writeResponseError:UInt
+  protected val readResponseError:UInt
 }
 
 /**
  * This class implements AXI4-Lite Master logic.
  * The user can instantiate this class with [[AXI4LiteMasterInterface]] trait
- * in a subclass of [[AXIModule]] via [[AXI4Interface]].
+ * in a subclass of [[AXIModule]].
  * This class defines AXI IOs compatible with Xilinx naming.It increase
  * interface name at each instantiation automatically like following:
  * M00_AXI_AWVALID
@@ -448,7 +432,7 @@ trait AXI4LiteMasterInterface extends AXIBaseInterface{
  *
  * If user wants custom prefix, it should assign new name to
  * [[AXIBaseInterface.suggestedName]] during implementation of
- * [[AXI4LiteSlaveInterface]].This time, the naming would be as follows:
+ * [[AXI4LiteMasterInterface]].This time, the naming would be as follows:
  * LEDCNTRL_AWVALID
  * LEDCNTRL_AWREADY
  * LEDCNTRL_AWADDR
@@ -468,7 +452,7 @@ trait AXI4LiteMasterInterface extends AXIBaseInterface{
  * }
  * }}}
  */
-abstract class AXI4LiteMasterNode(implicit ioFactory:AXIModule#IOFactory)
+abstract class AXI4LiteMasterNode(implicit ioFactory:AXIModule#IOFactory) extends AXINode
 {
   this:AXI4LiteMasterInterface=>
 
@@ -644,19 +628,6 @@ abstract class AXI4LiteMasterNode(implicit ioFactory:AXIModule#IOFactory)
    * @return Status
    */
   override def isReadyToRead: Bool = ready2ReadReg || ioView.r.fire
-
-  /**
-   * Thanks to this function, although the implementation of
-   * AXI4LiteSlaveConfig is not a subclass of the Module,
-   * user can can define IO via this function.
-   * @param bundle Bundle that will be IO
-   * @tparam T
-   * @return bundle parameter
-   */
-  def AXI4UserIO[T<:Bundle](bundle: T):T={
-    ioFactory(bundle)
-  }
-
 }
 
 /**
