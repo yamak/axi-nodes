@@ -13,7 +13,7 @@ The purpose of writing this library is that I want to quickly create AXI periphe
 
 * Well documented. 
 
-* For now, only AXI4-Lite Slave and Master nodes have been developed.
+* For now, AXI4-FULL not yet been developed
 
 
 ## Examples
@@ -27,4 +27,7 @@ It writes values from 0 to 10 to sequential addresses. It then reads back these 
 
 ### SimpleAXIMultiplier
 Multiplier peripheral. It has AXI4-Lite slave and master node. The Slave node receives multiplier, multiplicand and control signal from outside. Then it calculates product.Master node gets this product and transfer it to outside.
-  
+
+### AXIStreamFifo
+In this example, an AXI Stream fifo has been created.This fifo receives data from slave interface. 
+When it receives LAST signal, it sends buffered data from the master interface.
